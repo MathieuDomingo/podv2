@@ -10,7 +10,7 @@ from pod.main.settings import BASE_DIR
 ##
 # Version of the project
 #
-VERSION = '2.1.0'
+VERSION = '2.6.2'
 
 ##
 # Installed applications list
@@ -31,13 +31,14 @@ INSTALLED_APPS = [
     'ckeditor',
     'sorl.thumbnail',
     'tagging',
-    'django_cas',
+    'cas',
     'captcha',
     'progressbarupload',
     'rest_framework',
     'rest_framework.authtoken',
     'django_filters',
     'lti_provider',
+    'select2',
     # Pod Applications
     'pod.main',
     'django.contrib.admin',  # put it here for template override
@@ -53,6 +54,8 @@ INSTALLED_APPS = [
     'pod.recorder',
     'pod.lti',
     'pod.custom',
+    'shibboleth',
+    'chunked_upload',
 ]
 
 ##
@@ -73,8 +76,7 @@ MIDDLEWARE = [
 
 
 AUTHENTICATION_BACKENDS = (
-    'django.contrib.auth.backends.ModelBackend',
-    # 'django_cas.backends.CASBackend',
+    'pod.main.auth_backend.SiteBackend',
 )
 
 ##
@@ -223,15 +225,21 @@ for application in INSTALLED_APPS:
 #
 if 'USE_CAS' in globals() and eval('USE_CAS') is True:
     AUTHENTICATION_BACKENDS = (
-        'django.contrib.auth.backends.ModelBackend',
-        'django_cas.backends.CASBackend',
+        'pod.main.auth_backend.SiteBackend',
+        'cas.backends.CASBackend',
     )
     CAS_RESPONSE_CALLBACKS = (
         'pod.authentication.populatedCASbackend.populateUser',
         # function call to add some information to user login by CAS
     )
-    MIDDLEWARE.append('django_cas.middleware.CASMiddleware')
+    MIDDLEWARE.append('cas.middleware.CASMiddleware')
 
+if 'USE_SHIB' in globals() and eval('USE_SHIB') is True:
+    AUTHENTICATION_BACKENDS += (
+        'pod.authentication.backends.ShibbBackend',
+    )
+    MIDDLEWARE.append(
+        'pod.authentication.shibmiddleware.ShibbMiddleware')
 
 ##
 # Authentication backend : add lti backend if use

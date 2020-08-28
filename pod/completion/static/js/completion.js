@@ -34,6 +34,8 @@ $(document).on('reset', '#accordeon form.completion', function(event) {
 	$('form').show();
 	$('a.title').css('display', 'initial');
 	$('table tr').removeClass('info');
+	$('#fileModal_id_document').remove();
+	$('#fileModal_id_src').remove();
 });
 
 function show_form(data, form) {
@@ -70,13 +72,13 @@ $(document).on('submit', '#accordeon form.completion', function(e) {
 
 var sendandgetform = function(elt, action, name, form, list) {
 	var href = $(elt).attr('action');
-	if (action == 'new') {
+	if (action == 'new' || action == 'form_save_new') {
 		$('.info-card').hide();
 		$('#' + name + '-info').show();
 		var jqxhr = $.ajax({
 			method: 'POST',
 			url: window.location.origin + href,
-			data: {'action': 'new', 'csrfmiddlewaretoken': $(elt).find('input[name="csrfmiddlewaretoken"]').val()},
+			data: {'action': action, 'csrfmiddlewaretoken': $(elt).find('input[name="csrfmiddlewaretoken"]').val()},
 			dataType: 'html'
 		});
 		jqxhr.done(function(data) {
@@ -100,12 +102,12 @@ var sendandgetform = function(elt, action, name, form, list) {
 		$('a.title').css('display', 'none');
 		hide_others_sections(name);
 	}
-	if (action == 'modify') {
+	if (action == 'modify' || action == 'form_save_modify') {
 		var id = $(elt).find('input[name=id]').val();
 		var jqxhr = $.ajax({
 			method: 'POST',
 			url: window.location.origin + href,
-			data: {'action': 'modify', 'id': id, 'csrfmiddlewaretoken': $(elt).find('input[name="csrfmiddlewaretoken"]').val()},
+			data: {'action': action, 'id': id, 'csrfmiddlewaretoken': $(elt).find('input[name="csrfmiddlewaretoken"]').val()},
 			dataType: 'html'
 		});
 		jqxhr.done(function(data) {
@@ -145,7 +147,7 @@ var sendandgetform = function(elt, action, name, form, list) {
 			jqxhr = $.ajax({
 				method: 'POST',
 				url: window.location.origin + href,
-				data: {'action': 'delete', 'id': id, 'csrfmiddlewaretoken': $(elt).find('input[name="csrfmiddlewaretoken"]').val()},
+				data: {'action': action, 'id': id, 'csrfmiddlewaretoken': $(elt).find('input[name="csrfmiddlewaretoken"]').val()},
 				dataType: 'html'
 			});
 			jqxhr.done(function(data) {
@@ -177,6 +179,7 @@ var sendandgetform = function(elt, action, name, form, list) {
 				data = JSON.parse(data);
 				if (data.list_data || data.form) {
 					if (data.errors) {
+						$('#fileModal_id_src').remove();
 						show_form(data.form, form);
 					} else {
 						refresh_list(data, form, list);
